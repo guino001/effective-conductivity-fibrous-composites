@@ -70,10 +70,10 @@ Or contact the corresponding author directly:
 
 This repository is archived on Zenodo with the following DOI:
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![DOI](https://zenodo.org/badge/994935213.svg)](https://doi.org/10.5281/zenodo.15579038)
 
 📖 **Citation:**
 
-> Guinovart-Díaz, R., Bravo-Castillero, J., Cruz, M. E., Pérez-Fernández, L. D., Sabina, F. J., & Guinovart, D. (2025). *Supplementary MATLAB code: Simple formulas for the effective conductivity of fibrous composites with circular inclusions and parallelogram periodicity and their influence on thermal gain in nanofluids* [Code]. Zenodo. https://doi.org/10.5281/zenodo.XXXXXXX
+> Guinovart-Díaz, R., Bravo-Castillero, J., Cruz, M. E., Pérez-Fernández, L. D., Sabina, F. J., & Guinovart, D. (2025). *Supplementary MATLAB code: Simple formulas for the effective conductivity of fibrous composites with circular inclusions and parallelogram periodicity and their influence on thermal gain in nanofluids* [Code]. Zenodo. https://doi.org/10.5281/zenodo.15579039
 
 
