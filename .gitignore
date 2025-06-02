@@ -1,0 +1,33 @@
+# === MATLAB Autosave and Backup Files ===
+*.asv
+*.m~
+*.fig~
+*.mat~
+*.mdl~
+*.slx~
+
+# === Simulink Generated Code Folders ===
+slprj/
+sfprj/
+*_grt_rtw/
+*_ert_rtw/
+
+# === Compiled MEX Files (Platform-Specific) ===
+*.mex*
+*.mexw64
+*.mexmaci64
+*.mexa64
+
+# === Crash Dumps and Configuration Files ===
+matlab_crash_dump.*
+javaclasspath.txt
+pathdef.m
+
+# === Logs and Miscellaneous Temporary Files ===
+*.log
+*.autosave
+*.bak
+
+# === Hidden/System Files ===
+.DS_Store
+Thumbs.db
