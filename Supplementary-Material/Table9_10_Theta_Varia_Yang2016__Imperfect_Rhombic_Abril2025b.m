@@ -3,10 +3,17 @@ clearvars
  %%%%%%%%%%%%%%%%%%%%%
 %load S10_45_75_90_delta1_2; 
 load Sk_deltak1_deltak2_w1_w2_Tabla2_Yang_2016
-r=[1,1,sqrt(3)/2, 2*sqrt(3)/(sqrt(2)*(1+sqrt(3)))];
+%r=[1,1,sqrt(3)/2, 2*sqrt(3)/(sqrt(2)*(1+sqrt(3)))];
+r=[1,1,sqrt(3)/2, sqrt(6)/(1+sqrt(3))];
 theta=[pi/3,pi/2,pi/2,5*pi/12];
 omega1=[1,1,1,1];
 omega2=r.*exp(1i*theta);
+%%%%Percolacion
+V1 = abs(omega1).*abs(omega2).*sin(theta); % *** Volumen de la celda periodica *******
+d=sqrt((abs(omega1)).^2+(abs(omega2)).^2-2.*abs(omega1).*abs(omega2).*cos(theta));
+rm=1/2.*min([abs(omega1);abs(omega2);d]',[],2);
+rm=rm';
+V2m=pi.*rm.^2./V1; % percolacion
 
 lam=[.8,.7,.62,.66];
 Bi=4.995*1e-3;
@@ -18,10 +25,11 @@ for ii=1:4
  w2=omega2(ii);
  V = abs(w1).*abs(w2).*sin(theta(ii)); % *** Volumen de la celda periodica *******
 % 
-H1=(conj(delta1)*conj(w2)-conj(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
+%H1=(conj(delta1)*conj(w2)-conj(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
+H1=(pi)/imag(conj(w1)*w2);
 H2=((delta1)*conj(w2)-(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
-h11=real(H1);
-h21=imag(H1);
+h=(H1);
+%h21=imag(H1);
 h12=real(H2);
 h22=imag(H2);
 cm=1;
@@ -32,7 +40,7 @@ xas=cf/cm;
      r1=sqrt(V*V2/pi);  % radio fibra 
    % *** Radio de la fibra más la mesophase ************************************
      X1=(xas - K*(xas - 1))/(xas + K*(xas + 1));
-     J=eye(2)+X1*r1^2*[(h11+h12),(h21-h22);(-h21-h22),(h11-h12)];
+     J=eye(2)+X1*r1^2*[(h+h12),(-h22);(-h22),(h-h12)];
 
  %%% usando la notacion de Yang 2016 para la aproximacion
  CENo1(ii,:)=coeficientes_efectivos(cm,V2,X1,J);
@@ -46,7 +54,39 @@ xas=cf/cm;
                   
 end
 
+lam1=[0.9068993,   0.785398,   0.680174,  0.729009]; % percolaci[on reducido
+Bi=4.995*1e-3;
+for ii=1:4
+ S1=Sk(:,ii);
+ delta1=deltak1(ii);
+ delta2=deltak2(ii);
+ w1=omega1(ii);
+ w2=omega2(ii);
+ V = abs(w1).*abs(w2).*sin(theta(ii)); % *** Volumen de la celda periodica *******
+% 
+%H1=(conj(delta1)*conj(w2)-conj(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
+H1=(pi)/imag(conj(w1)*w2);
+H2=((delta1)*conj(w2)-(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
+h=(H1);
+%h21=imag(H1);
+h12=real(H2);
+h22=imag(H2);
+cm=1;
+cf=1001;
+xas=cf/cm;
+     V2=lam1(ii); % volumen de la fibra
+     K=1/(2*Bi); %% 10.41953;  %%%99.498; %%990.5;
+     r1=sqrt(V*V2/pi);  % radio fibra 
+   % *** Radio de la fibra más la mesophase ************************************
+     X1=(xas - K*(xas - 1))/(xas + K*(xas + 1));
+     J=eye(2)+X1*r1^2*[(h+h12),(-h22);(-h22),(h-h12)];
 
+ %%% usando la notacion de Yang 2016 para la aproximacion
+ 
+ CENoG1(ii,:) = conductividad_efectiva_imperfect_orden_m(cm,xas,K,V2,S1,J,r1,10); 
+ CENoG2(ii,:) = conductividad_efectiva_imperfect_orden_m(cm,xas,K,V2,S1,J,r1,21);
+ CENoG3(ii,:) = conductividad_efectiva_imperfect_orden_m(cm,xas,K,V2,S1,J,r1,2); 
+end
 
 matriz=[ 'cm= ',num2str(cm,5)];
 fibra=[ 'cf= ',num2str(cf,5)];
@@ -54,6 +94,8 @@ rho=[ '$\rho$','=',num2str(cf/cm,5)];
 angulo=['$theta=$ ' num2str(theta*180/pi,3),'$^o$'];
 Modulo=[ '|w2|= ',num2str(abs(omega2),5)];
 volfibra=[ '$V_2= $',num2str(lam,3)];
+Vol_per=[ '$V_2= $',num2str(lam1,7)];
+
 disp(Modulo)
 disp(angulo)
 disp(matriz)
@@ -63,7 +105,13 @@ disp(fibra)
 textoY=['$\hat{\kappa}_{11}/\kappa_1$';'$\hat{\kappa}_{22}/\kappa_1$';'$\hat{\kappa}_{12}/\kappa_1$'];
 
 Orden=[1:1:4, 6, 8, 10];
-Yan=[[25], 8.87231, 6.68414, 3.60293, 6.68099, 4.43499, 6.69367, 0.869646];
+Yan=[8.20000 5.34483 3.388350 5.34695 4.16683 5.62170 0.666908
+     8.20000 6.52913 3.60232 6.43325 4.38226 6.45305 0.775892
+     8.82902 6.64249 3.60237 6.61906 4.43359 6.64675 0.862522
+     8.87065 6.67684 3.60286 6.66858 4.43406 6.68391 0.866679
+     8.87174 6.68386 3.60292 6.68037 4.43496 6.69323 0.869527
+     8.87230 6.68413 3.60293 6.68096 4.43499 6.69365 0.869641
+     8.87231 6.68414 3.60293 6.68099 4.43499 6.69367 0.869646];
 
 Tabla(:,:)=[CENo1(1,1), CENo1(2,1),CENo1(3,1),CENo1(3,2),CENo1(4,1),CENo1(4,2),CENo1(4,3);
             CENo2(1,1), CENo2(2,1),CENo2(3,1),CENo2(3,2),CENo2(4,1),CENo2(4,2),CENo2(4,3);
@@ -71,13 +119,29 @@ Tabla(:,:)=[CENo1(1,1), CENo1(2,1),CENo1(3,1),CENo1(3,2),CENo1(4,1),CENo1(4,2),C
             CENo4(1,1), CENo4(2,1),CENo4(3,1),CENo4(3,2),CENo4(4,1),CENo4(4,2),CENo4(4,3);
             CENo6(1,1), CENo6(2,1),CENo6(3,1),CENo6(3,2),CENo6(4,1),CENo6(4,2),CENo6(4,3);
             CENo8(1,1), CENo8(2,1),CENo8(3,1),CENo8(3,2),CENo8(4,1),CENo8(4,2),CENo8(4,3);
-            CENoG(1,1), CENoG(2,1),CENoG(3,1),CENoG(3,2),CENoG(4,1),CENoG(4,2),CENoG(4,3)];         
+            CENoG(1,1), CENoG(2,1),CENoG(3,1),CENoG(3,2),CENoG(4,1),CENoG(4,2),CENoG(4,3)];    
+        
+ Table9=[Yan(:,3),Tabla(:,3),Yan(:,4),Tabla(:,4),Yan(:,5),Tabla(:,5),Yan(:,6),Tabla(:,6),Yan(:,7),Tabla(:,7) ] ;        
 
  disp('O_k       Hex           Sqr       Medio:k11   Medio:k22     Romb:k11    Romb:k22    Romb:k12    ')    
  disp(' -------------------------------------------')
- disp(num2str([Orden', Tabla(:,:); Yan],6))
+ disp('Table 9')
+ disp(num2str([Orden', Table9(:,:)],7))
  
- 
+ Tabla1(:,:)=[10, CENoG1(1,1),CENoG1(2,1),CENoG1(3,1),CENoG1(3,2),CENoG1(4,1),CENoG1(4,2),CENoG1(4,3);
+             21, CENoG2(1,1),CENoG2(2,1),CENoG2(3,1),CENoG2(3,2),CENoG2(4,1),CENoG2(4,2),CENoG2(4,3);
+             25, CENoG3(1,1),CENoG3(2,1),CENoG3(3,1),CENoG3(3,2),CENoG3(4,1),CENoG3(4,2),CENoG3(4,3)];
+                
+ disp(' -------------------------------------------')
+ disp(Modulo)
+disp(angulo)
+disp(matriz)
+disp(fibra)
+disp(Vol_per)
+
+ disp(' -------------------------------------------')
+ disp('Table 10')
+ disp(num2str([Tabla1(:,:)],6))
  
 
 

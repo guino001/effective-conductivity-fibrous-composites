@@ -5,9 +5,18 @@ r=[1,1,sqrt(5)/2, 2*sqrt(2)/(1+sqrt(3))];
 theta=[pi/3,pi/2,atan(2),5*pi/12];
 omega1=[1,1,1,1];
 omega2=r.*exp(1i*theta);
+%%%%Percolacion
+V1 = abs(omega1).*abs(omega2).*sin(theta); % *** Volumen de la celda periodica *******
+d=sqrt((abs(omega1)).^2+(abs(omega2)).^2-2.*abs(omega1).*abs(omega2).*cos(theta));
+rm=1/2.*min([abs(omega1);abs(omega2);d]',[],2);
+rm=rm';
+V2m=pi.*rm.^2./V1; % percolacion
 
 V2masV3=[.8,.7,.7,.7];
-xx=0.1;
+xx=0.1; % t/R2
+cm=1;
+cmf=990.5;
+cf=1/100;
 for ii=1:4
  S1=Sk(:,ii);
  delta1=deltak1(ii);
@@ -16,18 +25,12 @@ for ii=1:4
  w2=omega2(ii);
  V = abs(w1).*abs(w2).*sin(theta(ii)); % *** Volumen de la celda periodica *******
 % 
-H1=(conj(delta1)*conj(w2)-conj(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
+
+H1=(pi)/imag(conj(w1)*w2);
 H2=((delta1)*conj(w2)-(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
-h11=real(H1);
-h21=imag(H1);
+h=(H1);
 h12=real(H2);
 h22=imag(H2);
-cm=1;
-cmf=990.5;
-cf=1/100;
-cm=1;
-cmf=990.5;
-cf=1/100;
 x1=cmf/cm;
 x2=cf/cm;
 % *************************************************************************
@@ -38,21 +41,52 @@ V2=V2masV3(ii)-V3; % volumen del anillo
     t=xx*r2; %% espesor de la mesofase
 X1=((1-x1)*(x1+x2)*(V2+V3)+(1+x1)*(x1-x2)*(V3))/...
              ((1+x1)*(x1+x2)*(V2+V3)+(1-x1)*(x1-x2)*(V3));
- J=eye(2)+X1*r1^2*[(h11+h12),(h21-h22);(-h21-h22),(h11-h12)];
+ J=eye(2)+X1*r1^2*[(h+h12),(-h22);(-h22),(h-h12)];
  
- CENo0(ii,:)=coeficientes_efectivos(x1,x2,V3,V2,X1,J); 
- CENo1(ii,:) =ahm3f_Paralelogramo_Cortas_2025_No1(x1,x2,V3,V2,S1,X1,r1,J);
- CENo2(ii,:) =ahm3f_Paralelogramo_Cortas_2025_No2(x1,x2,V3,V2,S1,X1,r1,J); 
- CENo3(ii,:) =ahm3f_Paralelogramo_Cortas_2025_No3(x1,x2,V3,V2,S1,X1,r1,J);
- CENo4(ii,:) =ahm3f_Paralelogramo_Cortas_2025_No4(x1,x2,V3,V2,S1,X1,r1,J);
- CENo5(ii,:) =ahm3f_Paralelogramo_Cortas_2025_No5(x1,x2,V3,V2,S1,X1,r1,J);
- CENo6(ii,:) =ahm3f_Paralelogramo_Cortas_2025_No6(x1,x2,V3,V2,S1,X1,r1,J);
- %CENoG20(:,ii) = ahm3f_elastico_p13_p23_Paralelogramo_Agosto(cm,cf,cmf,V3,V2,V,S1,H1,H2,6);
- CENoG(ii,:) = conductividad_efectiva_orden_m(cm,cf,cmf,V3,V2,V,S1,r1,J,10);
+ CENo0(ii,:)=coeficientes_efectivos(x1,x2,V3,V2,J); 
+ CENo1(ii,:) =ahm3f_Paralelogramo_Cortas_2025_No1(x1,x2,V3,V2,S1,r1,J);
+ CENo2(ii,:) =ahm3f_Paralelogramo_Cortas_2025_No2(x1,x2,V3,V2,S1,r1,J); 
+ CENo3(ii,:) =ahm3f_Paralelogramo_Cortas_2025_No3(x1,x2,V3,V2,S1,r1,J);
+ CENo4(ii,:) =ahm3f_Paralelogramo_Cortas_2025_No5(x1,x2,V3,V2,S1,r1,J);
+ CENo5(ii,:) = conductividad_efectiva_orden_m(cm,cf,cmf,V3,V2,V,S1,r1,J,7);
+ CENoG(ii,:) = conductividad_efectiva_orden_m(cm,cf,cmf,V3,V2,V,S1,r1,J,9);
                  
 end
 
 
+V2masV3a=[ 0.906899,0.785398,0.785398,0.785398];
+xx=0.1; % t/R2
+for ii=1:4
+ S1=Sk(:,ii);
+ delta1=deltak1(ii);
+ delta2=deltak2(ii);
+ w1=omega1(ii);
+ w2=omega2(ii);
+ V = abs(w1).*abs(w2).*sin(theta(ii)); % *** Volumen de la celda periodica *******
+% 
+
+H1=(pi)/imag(conj(w1)*w2);
+H2=((delta1)*conj(w2)-(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
+h=(H1);
+h12=real(H2);
+h22=imag(H2);
+
+x1=cmf/cm;
+x2=cf/cm;
+% *************************************************************************
+V3=V2masV3a(ii)/(1+xx).^2; % volumen de fibra interna
+V2=V2masV3a(ii)-V3; % volumen del anillo
+    r1=sqrt(V*V2masV3a(ii)/pi);  % radio fibra mas mesofase
+    r2=sqrt(V*V3/pi);  % radio fibra mas fibra interior
+    t=xx*r2; %% espesor de la mesofase
+X1=((1-x1)*(x1+x2)*(V2+V3)+(1+x1)*(x1-x2)*(V3))/...
+             ((1+x1)*(x1+x2)*(V2+V3)+(1-x1)*(x1-x2)*(V3));
+ J=eye(2)+X1*r1^2*[(h+h12),(-h22);(-h22),(h-h12)];
+ 
+ CENoG1(ii,:) = conductividad_efectiva_orden_m(cm,cf,cmf,V3,V2,V,S1,r1,J,22);
+ CENoG2(ii,:) = conductividad_efectiva_orden_m(cm,cf,cmf,V3,V2,V,S1,r1,J,32); 
+ CENoG3(ii,:) = conductividad_efectiva_orden_m(cm,cf,cmf,V3,V2,V,S1,r1,J,42);  
+end
 
 matriz=[ 'cm= ',num2str(cm,5)];
 fibra=[ 'cf= ',num2str(cf,5)];
@@ -69,28 +103,19 @@ disp(fibra)
 disp(mesofase)
 
 textoY=['$\hat{\kappa}_{11}/\kappa_1$';'$\hat{\kappa}_{22}/\kappa_1$';'$\hat{\kappa}_{12}/\kappa_1$'];
-%%% Dos  fases
 
-% 
-% Vmf=['$V_{2}=$',num2str(num2str(me(tt)),3)];
-% 
-% matriz=[ 'cm= ',num2str(cm,5)];
-% fibra=[ 'cf= ',num2str(cf,5)];
-% mesofase=[ 'cmf= ',num2str(cmf,5)];
-% rho1=[ '$\rho_1$','=',num2str(cmf/cm,5),];
-% rho2=[ '$\rho_2$','=',num2str(cf/cm,5)];
-% angulo=['$\theta=$ ' num2str(theta(ii)*180/pi,3),'$^o$'];
-% Modulo=[ '|w2|= ',num2str(abs(w2),5)];
-% volmesofase=[ '$V_2= $',num2str(V2,3)];
-% disp(Modulo)
-% disp(angulo)
-% disp(matriz)
-% disp(fibra)
-% disp(mesofase)
 
-Orden=[0:1:6, 10, [27, [28]]];
+Orden=[1:1:4,6,8, 10];
 Zemi=[ 9.0532 6.8758 7.3080 4.7771 7.1407 5.5385 0.4449];
-Yan =[8.9926 6.8380 7.2652 4.7618 7.0997 5.5160 0.4401];
+Yan =[8.99259 6.83800 7.26517 4.76177 7.09965 5.51602 0.440128];
+
+Yan=[ 8.22428 5.35492 6.47373 4.61585 5.97169 4.94750 0.452284
+      8.22428 6.63206 6.90262 4.68798 6.80287 5.44000 0.342860
+      8.92889 6.77930 7.22368 4.76057 7.05683 5.50599 0.454821
+      8.98960 6.82609 7.25461 4.76175 7.08825 5.51496 0.438090
+      8.99155 6.83743 7.26463 4.76176 7.09915 5.51601 0.440132
+      8.99255 6.83797 7.26515 4.76177 7.09963 5.51602 0.440131
+      8.99259 6.83800 7.26517 4.76177 7.09965 5.51602 0.440128];
 
 Tabla(:,:)=[CENo0(1,1), CENo0(2,1),CENo0(3,1),CENo0(3,2),CENo0(4,1),CENo0(4,2),CENo0(4,3);
             CENo1(1,1), CENo1(2,1),CENo1(3,1),CENo1(3,2),CENo1(4,1),CENo1(4,2),CENo1(4,3);
@@ -98,13 +123,30 @@ Tabla(:,:)=[CENo0(1,1), CENo0(2,1),CENo0(3,1),CENo0(3,2),CENo0(4,1),CENo0(4,2),C
             CENo3(1,1), CENo3(2,1),CENo3(3,1),CENo3(3,2),CENo3(4,1),CENo3(4,2),CENo3(4,3);
             CENo4(1,1), CENo4(2,1),CENo4(3,1),CENo4(3,2),CENo4(4,1),CENo4(4,2),CENo4(4,3);
             CENo5(1,1), CENo5(2,1),CENo5(3,1),CENo5(3,2),CENo5(4,1),CENo5(4,2),CENo5(4,3);
-            CENo6(1,1), CENo6(2,1),CENo6(3,1),CENo6(3,2),CENo6(4,1),CENo6(4,2),CENo6(4,3);
-            CENoG(1,1), CENoG(2,1),CENoG(3,1),CENoG(3,2),CENoG(4,1),CENoG(4,2),CENoG(4,3)];         
+            CENoG(1,1), CENoG(2,1),CENoG(3,1),CENoG(3,2),CENoG(4,1),CENoG(4,2),CENoG(4,3)];    
+   Table13=[Yan(:,3),Tabla(:,3),Yan(:,4),Tabla(:,4),Yan(:,5),Tabla(:,5),Yan(:,6),Tabla(:,6),Yan(:,7),Tabla(:,7) ] ;
 
  disp('O_k       Hex           Sqr       Medio:k11   Medio:k22     Romb:k11    Romb:k22    Romb:k12    ')    
  disp(' -------------------------------------------')
- disp(num2str([Orden', [Tabla(:,:);Yan;Zemi ]],6))
+ disp('Table 13')
+ disp(num2str([Orden', Table13(:,:)],6))
+ Vol_per=[ '$V_f= $',num2str(V2masV3a,7)];
  
+ 
+ Tabla1(:,:)=[22, CENoG1(1,1),CENoG1(2,1),CENoG1(3,1),CENoG1(3,2),CENoG1(4,1),CENoG1(4,2),CENoG1(4,3);
+             32, CENoG2(1,1),CENoG2(2,1),CENoG2(3,1),CENoG2(3,2),CENoG2(4,1),CENoG2(4,2),CENoG2(4,3);
+             42, CENoG3(1,1),CENoG3(2,1),CENoG3(3,1),CENoG3(3,2),CENoG3(4,1),CENoG3(4,2),CENoG3(4,3)];
+                
+ disp(Modulo)
+disp(angulo)
+disp(matriz)
+disp(fibra)
+disp(mesofase)
+disp(Vol_per)
+
+ disp(' -------------------------------------------')
+ disp('Table 14')
+ disp(num2str([Tabla1(:,:)],6))
  
  
 
@@ -112,11 +154,12 @@ Tabla(:,:)=[CENo0(1,1), CENo0(2,1),CENo0(3,1),CENo0(3,2),CENo0(4,1),CENo0(4,2),C
 %%%FUNCIONES
 
 %% orden del sistema No=1
-function RR1 =ahm3f_Paralelogramo_Cortas_2025_No1(x1,x2,V3,V2,S1,X1,r1,J)
+function RR1 =ahm3f_Paralelogramo_Cortas_2025_No1(x1,x2,V3,V2,S1,r1,J)
 
 S4=S1(4);S6=S1(6);S8=S1(8);S10=S1(10);S12=S1(12);S14=S1(14);S16=S1(16);S18=S1(18);
 S20=S1(20);S22=S1(22);S24=S1(24);
-
+X1=((1-x1)*(x1+x2)*(V2+V3)+(1+x1)*(x1-x2)*(V3))/...
+             ((1+x1)*(x1+x2)*(V2+V3)+(1-x1)*(x1-x2)*(V3));
 X3=((1-x1)*(x1+x2)*(V2+V3)^3+(1+x1)*(x1-x2)*(V3)^3)/...
              ((1+x1)*(x1+x2)*(V2+V3)^3+(1-x1)*(x1-x2)*(V3)^3);
 X5=((1-x1)*(x1+x2)*(V2+V3)^5+(1+x1)*(x1-x2)*(V3)^5)/...
@@ -157,18 +200,19 @@ JK=J+PP; % Matriz Z
 % disp('corto');
 Z=JK;
 
-RR1 =coeficientes_efectivos(x1,x2,V3,V2,X1,Z);
+RR1 =coeficientes_efectivos(x1,x2,V3,V2,Z);
 
 end
 
 
 
 %%% orden del sistema No=2
-function RR2 =ahm3f_Paralelogramo_Cortas_2025_No2(x1,x2,V3,V2,S1,X1,r1,J)
+function RR2 =ahm3f_Paralelogramo_Cortas_2025_No2(x1,x2,V3,V2,S1,r1,J)
 
 S4=S1(4);S6=S1(6);S8=S1(8);S10=S1(10);S12=S1(12);S14=S1(14);S16=S1(16);S18=S1(18);
 S20=S1(20);S22=S1(22);S24=S1(24);
-
+X1=((1-x1)*(x1+x2)*(V2+V3)+(1+x1)*(x1-x2)*(V3))/...
+             ((1+x1)*(x1+x2)*(V2+V3)+(1-x1)*(x1-x2)*(V3));
 X3=((1-x1)*(x1+x2)*(V2+V3)^3+(1+x1)*(x1-x2)*(V3)^3)/...
              ((1+x1)*(x1+x2)*(V2+V3)^3+(1-x1)*(x1-x2)*(V3)^3);
 X5=((1-x1)*(x1+x2)*(V2+V3)^5+(1+x1)*(x1-x2)*(V3)^5)/...
@@ -210,17 +254,18 @@ JK=J+PP; % Matriz Z
 % disp('corto');
 Z=JK;
 
-RR2 =coeficientes_efectivos(x1,x2,V3,V2,X1,Z);
+RR2 =coeficientes_efectivos(x1,x2,V3,V2,Z);
 
 end
 
 
 %%% orden del sistema No=3
-function RR3 =ahm3f_Paralelogramo_Cortas_2025_No3(x1,x2,V3,V2,S1,X1,r1,J)
+function RR3 =ahm3f_Paralelogramo_Cortas_2025_No3(x1,x2,V3,V2,S1,r1,J)
 
 S4=S1(4);S6=S1(6);S8=S1(8);S10=S1(10);S12=S1(12);S14=S1(14);S16=S1(16);S18=S1(18);
 S20=S1(20);S22=S1(22);S24=S1(24);
-
+X1=((1-x1)*(x1+x2)*(V2+V3)+(1+x1)*(x1-x2)*(V3))/...
+             ((1+x1)*(x1+x2)*(V2+V3)+(1-x1)*(x1-x2)*(V3));
 X3=((1-x1)*(x1+x2)*(V2+V3)^3+(1+x1)*(x1-x2)*(V3)^3)/...
              ((1+x1)*(x1+x2)*(V2+V3)^3+(1-x1)*(x1-x2)*(V3)^3);
 X5=((1-x1)*(x1+x2)*(V2+V3)^5+(1+x1)*(x1-x2)*(V3)^5)/...
@@ -262,17 +307,18 @@ JK=J+PP; % Matriz Z
 % disp('corto');
 Z=JK;
 
-RR3 =coeficientes_efectivos(x1,x2,V3,V2,X1,Z);
+RR3 =coeficientes_efectivos(x1,x2,V3,V2,Z);
 
 end
 
 
 %%% orden del sistema No=4
-function RR4 =ahm3f_Paralelogramo_Cortas_2025_No4(x1,x2,V3,V2,S1,X1,r1,J)
+function RR4 =ahm3f_Paralelogramo_Cortas_2025_No4(x1,x2,V3,V2,S1,r1,J)
 
 S4=S1(4);S6=S1(6);S8=S1(8);S10=S1(10);S12=S1(12);S14=S1(14);S16=S1(16);S18=S1(18);
 S20=S1(20);S22=S1(22);
-
+X1=((1-x1)*(x1+x2)*(V2+V3)+(1+x1)*(x1-x2)*(V3))/...
+             ((1+x1)*(x1+x2)*(V2+V3)+(1-x1)*(x1-x2)*(V3));
 X3=((1-x1)*(x1+x2)*(V2+V3)^3+(1+x1)*(x1-x2)*(V3)^3)/...
              ((1+x1)*(x1+x2)*(V2+V3)^3+(1-x1)*(x1-x2)*(V3)^3);
 X5=((1-x1)*(x1+x2)*(V2+V3)^5+(1+x1)*(x1-x2)*(V3)^5)/...
@@ -311,17 +357,18 @@ JK=J+PP; % Matriz Z
 % disp('corto');
 Z=JK;
 
-RR4 =coeficientes_efectivos(x1,x2,V3,V2,X1,Z);
+RR4 =coeficientes_efectivos(x1,x2,V3,V2,Z);
 
 end
 
 
 %%% orden del sistema No=5
-function RR5 =ahm3f_Paralelogramo_Cortas_2025_No5(x1,x2,V3,V2,S1,X1,r1,J)
+function RR5 =ahm3f_Paralelogramo_Cortas_2025_No5(x1,x2,V3,V2,S1,r1,J)
 
 S4=S1(4);S6=S1(6);S8=S1(8);S10=S1(10);S12=S1(12);S14=S1(14);S16=S1(16);S18=S1(18);
 S20=S1(20);S22=S1(22);S24=S1(24);
-
+X1=((1-x1)*(x1+x2)*(V2+V3)+(1+x1)*(x1-x2)*(V3))/...
+             ((1+x1)*(x1+x2)*(V2+V3)+(1-x1)*(x1-x2)*(V3));
 X3=((1-x1)*(x1+x2)*(V2+V3)^3+(1+x1)*(x1-x2)*(V3)^3)/...
              ((1+x1)*(x1+x2)*(V2+V3)^3+(1-x1)*(x1-x2)*(V3)^3);
 X5=((1-x1)*(x1+x2)*(V2+V3)^5+(1+x1)*(x1-x2)*(V3)^5)/...
@@ -368,16 +415,17 @@ JK=J+PP; % Matriz Z
 % disp('corto');
 Z=JK;
 
-RR5 =coeficientes_efectivos(x1,x2,V3,V2,X1,Z);
+RR5 =coeficientes_efectivos(x1,x2,V3,V2,Z);
 
 end
 
 %%% orden del sistema No=6
-function RR6 =ahm3f_Paralelogramo_Cortas_2025_No6(x1,x2,V3,V2,S1,X1,r1,J)
+function RR6 =ahm3f_Paralelogramo_Cortas_2025_No6(x1,x2,V3,V2,S1,r1,J)
 
 S4=S1(4);S6=S1(6);S8=S1(8);S10=S1(10);S12=S1(12);S14=S1(14);S16=S1(16);S18=S1(18);
 S20=S1(20);S22=S1(22);S24=S1(24);S26=S1(26);
-
+X1=((1-x1)*(x1+x2)*(V2+V3)+(1+x1)*(x1-x2)*(V3))/...
+             ((1+x1)*(x1+x2)*(V2+V3)+(1-x1)*(x1-x2)*(V3));
 X3=((1-x1)*(x1+x2)*(V2+V3)^3+(1+x1)*(x1-x2)*(V3)^3)/...
              ((1+x1)*(x1+x2)*(V2+V3)^3+(1-x1)*(x1-x2)*(V3)^3);
 X5=((1-x1)*(x1+x2)*(V2+V3)^5+(1+x1)*(x1-x2)*(V3)^5)/...
@@ -430,46 +478,15 @@ JK=J+PP; % Matriz Z
 % disp('corto');
 Z=JK;
 
-RR6 =coeficientes_efectivos(x1,x2,V3,V2,X1,Z);
+RR6 =coeficientes_efectivos(x1,x2,V3,V2,Z);
 
 end
 
 
 
-
-% %**************************************************************************
-% % FORMULA DE LOS COEFICIENTES EFECTIVOS (PROBLEMAS Antiplano)
-% %**************************************************************************
-% function RR =coeficientes_efectivos(x1,x2,V3,V2,X1,Z)
-% F=X1*(1-x1+2*V3*(x1-x2)*x1/(V2*(x1+x2)+2*V3*x1));
-% G=1/(V2*(x1+x2)+2*V3*x1);
-% DtZ=det(Z);
-% c55=(1-V2-V3+x1*V2+x2*V3-(V2+V3)*F*((X1+1)*Z(2,2)-DtZ)/(DtZ*X1)-G*(x1-x2)^2*V2*V3);
-%                     c45=((V2+V3)*F*((X1+1)*Z(2,1))/(DtZ*X1));
-%                     c54=((V2+V3)*F*((X1+1)*Z(1,2))/(DtZ*X1));
-% c44=(1-V2-V3+x1*V2+x2*V3-(V2+V3)*F*((X1+1)*Z(1,1)-DtZ)/(DtZ*X1)-G*(x1-x2)^2*V2*V3);
-%       
-% RR=[c55,c44,c54,c45];
-% end
-
-
-
 function [kappa_eff] = conductividad_efectiva_orden_m(kappa1, kappa3, kappa2,V3,V2,V,Sk,R1,J1,m);
                     
-      % Input parameters:
-    % m - order of approximation (m=1,2,3,...)
-    % omega1, omega2 - complex periods (omega1=1, omega2=r*exp(i*theta))
-    % R2 - radius of central fiber
-    % t - coating thickness
-    % Sk - complex coefficients (array)
-    % delta1, delta2 - parameters
-    % kappa1, kappa2, kappa3 - conductivity coefficients
-    
-    % Calculate basic parameters
-%     R1 = R2 + t;
-%     V = abs(omega1) * abs(omega2) * sin(angle(omega2));
-%     V2 = pi * R1^2 / V;
-%     V3 = pi * R2^2 / V;
+   
       V2plusV3=V2+V3;
       %R1=sqrt(V*V2plusV3/pi);  % radio fibra mas mesofase   
     % Calculate rho values
@@ -485,24 +502,6 @@ function [kappa_eff] = conductividad_efectiva_orden_m(kappa1, kappa3, kappa2,V3,
         chi(p) = numerator / denominator;
     end
     
-%     % Calculate H1 and H2
-%     omega1_conj = conj(omega1);
-%     omega2_conj = conj(omega2);
-%     delta1_conj = conj(delta1);
-%     delta2_conj = conj(delta2);
-    
-%     denominator_H = omega1 * omega2_conj - omega2 * omega1_conj;
-%     H1 = (delta1_conj * omega2_conj - delta2_conj * omega1_conj) / denominator_H;
-%     H2 = (delta1 * omega2_conj - delta2 * omega1_conj) / denominator_H;
-    
-%     h11 = real(H1);
-%     h12 = real(H2);
-%     h21 = imag(H1);
-%     h22 = imag(H2);
-%     
-%     % Construct J1 matrix
-%     J1 = [h11 + h12, h21 - h22; 
-%           -h21 - h22, h11 - h12];
     
     % Determine maximum L matrix needed
     max_L_needed = 4*(m) + 2; % Maximum L index needed: 2(m)+2
@@ -575,56 +574,22 @@ function [kappa_eff] = conductividad_efectiva_orden_m(kappa1, kappa3, kappa2,V3,
     % Calculate Z matrix
     I2 = eye(2);
     Z = J1 - chi(1) * N1 * inv(eye(2*(m)) + W) * N2;
-        % Calculate F and G
-%     numerator_F = V2*(rho1 + rho2)*(1 - rho1) + 2*V3*rho1*(1 - rho2);
-%     denominator_F = V2*(rho1 + rho2) + 2*V3*rho1;
-%     F = numerator_F / denominator_F;
-%     
-%     G = 1 / denominator_F;
-    
-%     % Extract components of Z matrix
-%     z11 = Z(1,1);
-%     z12 = Z(1,2);
-%     z21 = Z(2,1);
-%     z22 = Z(2,2);
-%     detZ = det(Z);
+ 
     
     % Calculate effective conductivity coefficients
-    kappa_eff = coeficientes_efectivos(rho1,rho2,V3,V2,chi(1),Z);
+    kappa_eff = coeficientes_efectivos(rho1,rho2,V3,V2,Z);
           
-%     c55 = kappa1 * (1 - (1-rho1)*V2 - (1-rho2)*V3 - (V2+V3)*F*((chi(1)+1)*z22 - detZ)/detZ - G*(rho1-rho2)^2*V2*V3);
-%     c45= kappa1 * (V2 + V3) * F * ((chi(1)+1)*z21) / detZ;
-%     c54 = kappa1 * (V2 + V3) * F * ((chi(1)+1)*z12) / detZ;
-%     c44 = kappa1 * (1 - (1-rho1)*V2 - (1-rho2)*V3 - (V2+V3)*F*((chi(1)+1)*z11 - detZ)/detZ - G*(rho1-rho2)^2*V2*V3);
-%     
-%     kappa_eff=[c55,c44,c54,c45];
 end
 
 
-%**************************************************************************
-% FORMULA DE LOS COEFICIENTES EFECTIVOS (PROBLEMAS Antiplano)
-% %**************************************************************************
-% function RR =coeficientes_efectivos(x1,x2,V3,V2,X1,Z)
-% % F=(1-x1+2*V3*(x1-x2)*x1/(V2*(x1+x2)+2*V3*x1));
-% % G=1/(V2*(x1+x2)+2*V3*x1);
-% % DtZ=det(Z);
-% c55=(1-V2-V3+x1*V2+x2*V3-(V2+V3)*F*((X1+1)*Z(2,2)-DtZ)/(DtZ)-G*(x1-x2)^2*V2*V3);
-%                     c45=((V2+V3)*F*((X1+1)*Z(2,1))/(DtZ));
-%                     c54=((V2+V3)*F*((X1+1)*Z(1,2))/(DtZ));
-% c44=(1-V2-V3+x1*V2+x2*V3-(V2+V3)*F*((X1+1)*Z(1,1)-DtZ)/(DtZ)-G*(x1-x2)^2*V2*V3);
-% %       
-% % RR=[c55,c44,c54,c45];
-%  end
 
 %**************************************************************************
 % FORMULA DE LOS COEFICIENTES EFECTIVOS (PROBLEMAS Antiplano)
 %**************************************************************************
-function RR =coeficientes_efectivos(x1,x2,V3,V2,X1,Z)
-X1=0;
+function RR =coeficientes_efectivos(x1,x2,V3,V2,Z)
+
 Delta= (V2*(1-x1)*(x1+x2)+2*V3*x1*(1-x2)) / ...
          ((1+x1)*(x1+x2)*(V2+V3)+(1-x1)*(x1-x2)*(V3));
- %F=(1-x1+2*V3*(x1-x2)*x1/(V2*(x1+x2)+2*V3*x1));
-% G=1/(V2*(x1+x2)+2*V3*x1);
 DtZ=det(Z);
 c55=(1-2*(V2+V3)*Delta*(Z(2,2))/(DtZ));
   c45=2*((V2+V3)*Delta*(Z(2,1))/(DtZ));

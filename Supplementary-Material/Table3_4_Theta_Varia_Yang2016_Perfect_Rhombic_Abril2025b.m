@@ -1,10 +1,13 @@
 clearvars
-
+clear all
  %%%%%%%%%%%%%%%%%%%%%
 %load S10_45_75_90_delta1_2; 
-load Sk_deltak1_deltak2_w1_w2_Tabla1_Yang_2016
+load Sk_deltak1_deltak2_w1_w2_Tabla1_Yang_2016 
 
 lam=[.8,.7,.36,.48];
+w1=omega1;
+ w2=omega2;
+H2=((deltak1).*conj(w2)-(deltak2).*conj(w1))./(w1.*conj(w2)-w2.*conj(w1));
 for ii=1:4
  S1=Sk(:,ii);
  delta1=deltak1(ii);
@@ -13,19 +16,25 @@ for ii=1:4
  w2=omega2(ii);
  V = abs(w1).*abs(w2).*sin(theta(ii)); % *** Volumen de la celda periodica *******
 % 
-H1=(conj(delta1)*conj(w2)-conj(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
+
+H1=(pi)/imag(conj(w1)*w2);
 H2=((delta1)*conj(w2)-(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
-h11=real(H1);
-h21=imag(H1);
+h=(H1);
+%h21=imag(H1);
 h12=real(H2);
+if ii==4
 h22=imag(H2);
+else
+    h22=0;
+end
 cm=1;
 cf=50;
 xas=cf/cm;
 X=(1-xas)/(1+xas);
      V2=lam(ii); % volumen de la fibra
     r=sqrt(V*V2/pi);  % radio fibra 
-    J=eye(2)+X*r^2*[(h11+h12),(h21-h22);(-h21-h22),(h11-h12)];
+    %J=eye(2)+X*r^2*[(H1+h12),(-h22);(-h22),(H1-h12)]
+    J=eye(2)+X*r^2*[(h+h12),(-h22);(-h22),(h-h12)];
 
  %%% usando la notacion de Yang 2016 para la aproximacion
  CENo1(ii,:)=coeficientes_efectivos2f(cm,V2,X,J) ;
@@ -35,8 +44,12 @@ X=(1-xas)/(1+xas);
 %  CENo4(ii,:) =ahm_imperfect_Paralelogramo_Cortas_2023_No4(cm,xas,K,V2,S1,J,r1);
  CENo6(ii,:) =ahm2f_Paralelogramo_Cortas_2023_No5(cm,X,V2,S1,r,J);
  CENo8(ii,:) =conductividad_efectiva_orden_m(cm,X,V2,S1,r,J,7);
- CENoG(ii,:) = conductividad_efectiva_orden_m(cm,X,V2,S1,r,J,9); 
-                 
+ %CENoG(ii,:) = conductividad_efectiva_orden_m(cm,X,V2,S1,r,J,20); 
+CENoG(ii,:) = ahm_imperfect_Paralelogramo(cm,cf,V2,V,S1,H1,H2,10);
+%  k22yan=cm*(1-(1-3.43759/pi)*X*V2)/(1+(1+3.43759/pi)*X*V2);  
+%  k11yan=cm*(1-(1+3.43759/pi)*X*V2)/(1+(1-3.43759/pi)*X*V2);
+%  CEyan(ii,:)=[k11yan,k22yan];
+ 
 end
 
 
@@ -52,13 +65,11 @@ disp(Modulo)
 disp(angulo)
 disp(matriz)
 disp(fibra)
-
+disp(volfibra)
 
 textoY=['$\hat{\kappa}_{11}/\kappa_1$';'$\hat{\kappa}_{22}/\kappa_1$';'$\hat{\kappa}_{12}/\kappa_1$'];
 
 Orden=[1:1:4, 6, 8, 10];
-Zem=[[26], 8.2603 6.3359 1.8840 4.1978 2.9692 4.4972 1.3256] ; %%%% \cite{ZEMLYANOVA2023},
- Yan=[[25],8.2600 6.3359 1.6899 4.1978 2.9600 4.4977 1.3248] ;  %%%% \cite{Yan2016}
 
 Tabla(:,:)=[CENo1(1,1), CENo1(2,1),CENo1(3,1),CENo1(3,2),CENo1(4,1),CENo1(4,2),CENo1(4,3);
             CENo2(1,1), CENo2(2,1),CENo2(3,1),CENo2(3,2),CENo2(4,1),CENo2(4,2),CENo2(4,3);
@@ -66,14 +77,67 @@ Tabla(:,:)=[CENo1(1,1), CENo1(2,1),CENo1(3,1),CENo1(3,2),CENo1(4,1),CENo1(4,2),C
             CENo4(1,1), CENo4(2,1),CENo4(3,1),CENo4(3,2),CENo4(4,1),CENo4(4,2),CENo4(4,3);
             CENo6(1,1), CENo6(2,1),CENo6(3,1),CENo6(3,2),CENo6(4,1),CENo6(4,2),CENo6(4,3);
             CENo8(1,1), CENo8(2,1),CENo8(3,1),CENo8(3,2),CENo8(4,1),CENo8(4,2),CENo8(4,3);
-            CENoG(1,1), CENoG(2,1),CENoG(3,1),CENoG(3,2),CENoG(4,1),CENoG(4,2),CENoG(4,3)];         
+            CENoG(1,1), CENoG(2,1),CENoG(3,1),CENoG(3,2),CENoG(4,1),CENoG(4,2),CENoG(4,3)];  
+%%% table 1 Yan 2016
+Yan=[7.64407 5.10778 1.66993 3.50961 2.69362 3.79330 0.943634;
+     7.64407 6.18007 1.68932 4.02376 2.90209 4.32367 1.22573;
+     8.21305 6.29151 1.68987 4.15497 2.94546 4.45468 1.29986;
+     8.25787 6.32727 1.68988 4.18703 2.95635 4.48683 1.31857;
+     8.25927 6.33552 1.68988 4.19710 2.95970 4.49690 1.32437;
+     8.25999 6.33590 1.68988 4.19779 2.95993 4.49759 1.32476;
+     8.26001 6.33592 1.68988 4.19784 2.95995 4.49764 1.32479];
+ 
+Table3=[Yan(:,3),Tabla(:,3),Yan(:,4),Tabla(:,4),Yan(:,5),Tabla(:,5),Yan(:,6),Tabla(:,6),Yan(:,7),Tabla(:,7) ] ;      
 
- disp('O_k       Hex           Sqr       Rect:k11   Rect:k22     Romb:k11    Romb:k22    Romb:k12    ')    
+ disp('O_k       Hex           Sqr       Rect:k11    Rect:k22     Romb:k11    Romb:k22    Romb:k12    ')    
+  disp(' -------------------------------------------')
+ disp('Table 3')
+ disp(num2str([Orden', Table3(:,:)],6))
+ 
+ V2me=[0.90,   0.785,   0.392  0.523]; % percolaci[on reducido
+lam=V2me;
+ for ii=1:4
+ S1=Sk(:,ii);
+ delta1=deltak1(ii);
+ delta2=deltak2(ii);
+ w1=omega1(ii);
+ w2=omega2(ii);
+ V = abs(w1).*abs(w2).*sin(theta(ii)); % *** Volumen de la celda periodica *******
+% 
+%H1=(conj(delta1)*conj(w2)-conj(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
+H1=(pi)/imag(conj(w1)*w2);
+H2=((delta1)*conj(w2)-(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
+h11=real(H1);
+h21=imag(H1);
+h12=real(H2);
+h22=imag(H2);
+cm=1;
+cf=20;
+xas=cf/cm;
+X=(1-xas)/(1+xas);
+     V2=lam(ii); % volumen de la fibra
+    r=sqrt(V*V2/pi);  % radio fibra 
+    J=eye(2)+X*r^2*[(h11+h12),(-h22);(-h22),(h11-h12)];
+CENoG1(ii,:) = conductividad_efectiva_orden_m(cm,X,V2,S1,r,J,20);
+CENoG2(ii,:) = conductividad_efectiva_orden_m(cm,X,V2,S1,r,J,30);
+CENoG3(ii,:) = conductividad_efectiva_orden_m(cm,X,V2,S1,r,J,42); 
+end
+
+ Vol_per=[ '$V_2= $',num2str(V2me,3)];
+ Tabla1(:,:)=[20, CENoG1(1,1),CENoG1(2,1),CENoG1(3,1),CENoG1(3,2),CENoG1(4,1),CENoG1(4,2),CENoG1(4,3);
+             30, CENoG2(1,1),CENoG2(2,1),CENoG2(3,1),CENoG2(3,2),CENoG2(4,1),CENoG2(4,2),CENoG2(4,3);
+             42, CENoG3(1,1),CENoG3(2,1),CENoG3(3,1),CENoG3(3,2),CENoG3(4,1),CENoG3(4,2),CENoG3(4,3)];
+
+disp(' -------------------------------------------')
+ disp(Modulo)
+disp(angulo)
+disp(matriz)
+disp(fibra)
+disp(Vol_per)
+
  disp(' -------------------------------------------')
- disp(num2str([Orden', Tabla(:,:); Yan; Zem],6))
- 
- 
- 
+ disp('Table 4')
+ disp(num2str([Tabla1(:,:)],6))                
 
 
 %%%FUNCIONES
@@ -344,7 +408,105 @@ function [kappa_eff] = conductividad_efectiva_orden_m(cm,X,V2,Sk,R,J,m)
  
 end
 
+ 
+ function RR=ahm_imperfect_Paralelogramo(cm,cf,V2,V,S1,H1,H2,No)  
+ 
+r = sqrt(V*V2/pi);  % *** Radio de la fibra *******************************
+xas=cf/cm;
+S=S1;
+%Matriz Wnk
+for n=1:2:91
+   for k=1:2:91
 
+Wnk(n,k)=(S(n+k))*(r^(n+k))*((factorial(n+k-1)/(factorial(n-1)*factorial(k-1)))/...
+               sqrt(n*k));
+
+   end
+end
+RWnk=real(Wnk);
+IWnk=imag(Wnk);
+di=eye(length(S)); 
+
+% Para hallar los Bp
+
+for s=1:2:90,
+
+       Bp(s)=((1-xas))/((xas+1));
+       
+end
+% %************************************************************************
+
+%      %*************** MATRIZ del Sistema Problema 13 y 23 . Problema antiplano
+  for t=1:No,
+   for s=1:No ;
+
+   AP(:,:,t,s)=di(t,s)*[1,0;0,1]+Bp(2*t+1)*[RWnk(2*s+1,2*t+1),-IWnk(2*s+1,2*t+1);...
+                                        -IWnk(2*s+1,2*t+1), -RWnk(2*s+1,2*t+1)];
+  
+   end
+  end
+  
+  for t=1:No
+    NP(:,:,t)=Bp(2*t+1)*[RWnk(1,2*t+1),-IWnk(1,2*t+1);...
+                 -IWnk(1,2*t+1), -RWnk(1,2*t+1)];
+    NPa(:,:,t)=[RWnk(2*t+1,1),-IWnk(2*t+1,1);...
+                 -IWnk(2*t+1,1), -RWnk(2*t+1,1)];
+    
+ end
+ 
+ AP1=zeros(2*No,2,No);
+ for s=1:No
+ for t=1:No
+     AP1(1+2*(t-1):2+2*(t-1),:,s)=AP(:,:,t,s);
+ end
+ end
+ 
+ AP2=zeros(2*No,2*No);
+ for t=1:No
+  
+  AP2(:,1+2*(t-1):2+2*(t-1))=AP1(:,:,t);
+  end
+
+ NP1=zeros(2*No,2);
+ NP1a=zeros(2,2*No);
+ for t=1:No
+   % para armar las matrices
+  NP1(1+2*(t-1):2+2*(t-1),:)=NP(:,:,t);
+  NP1a(:,1+2*(t-1):2+2*(t-1))=NPa(:,:,t);
+  end 
+ 
+  
+  PP=-Bp(1)*NP1a*inv(AP2)*NP1; 
+  
+ 
+
+h11=real(H1);
+h21=imag(H1);
+h12=real(H2);
+h22=imag(H2);
+
+% J=[1+Bp(1)*r^2*(h11+h12),Bp(1)*r^2*(h21-h22);...
+%      -Bp(1)*r^2*(h21+h22),1+Bp(1)*r^2*(h11-h12)]; % cortas
+ 
+ J=eye(2)+Bp(1)*r^2*[(h11+h12),(h21-h22);(-h21-h22),(h11-h12)];
+
+JK=J+PP;
+Z=JK;
+DtZ=det(Z);
+
+%********************************************************************************************
+% FORMULA DE LOS COEFICIENTES EFECTIVOS (PROBLEMAS Antiplano)
+%********************************************************************************************
+
+c55=cm*(1-2*V2*Bp(1)*Z(2,2)/DtZ);
+  c45=cm*(2*V2*Bp(1)*Z(2,1)/DtZ);
+  c54=cm*(2*V2*Bp(1)*Z(1,2)/DtZ);
+c44=cm*(1-2*V2*Bp(1)*Z(1,1)/DtZ);
+   
+
+RR=[c55,c44,c54,c45];
+
+ end
 
 %**************************************************************************
 % FORMULA DE LOS COEFICIENTES EFECTIVOS (PROBLEMAS Antiplano)
@@ -359,3 +521,4 @@ c44=cm*(1-2*V2*X*Z(1,1)/DtZ);
         
 RR=[c55,c44,c54,c45];
 end
+

@@ -41,10 +41,11 @@ delta2=delta1.*w2-2*pi*1i;
 
 V = abs(w1)*abs(w2)*sin(theta(ii)); % *** Volumen de la celda periodica *******
 % 
-H1=(conj(delta1)*conj(w2)-conj(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
+%H1=(conj(delta1)*conj(w2)-conj(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
 H2=((delta1)*conj(w2)-(delta2)*conj(w1))/(w1*conj(w2)-w2*conj(w1));
-h11=real(H1);
-h21=imag(H1);
+H1=(pi)/imag(w1*w2);
+% h11=real(H1);
+% h21=imag(H1);
 h12=real(H2);
 h22=imag(H2);
 
@@ -62,7 +63,7 @@ for j=1:length(lam)
   r = sqrt(V*V2/pi);  % *** Radio de la fibra más la mesophase ************************************
 
  
- J=eye(2)+X*r^2*[(h11+h12),(h21-h22);(-h21-h22),(h11-h12)];
+ J=eye(2)+X*r^2*[(H1+h12),(-h22);(-h22),(H1-h12)];
  
  
  CENo0(j,:,tt)=coeficientes_efectivos2f(cm,V2,X,J); % VanFo Fi
