@@ -13,6 +13,19 @@ This repository contains MATLAB scripts used to generate the **figures** and **t
 
 ---
 
+🔄 Update After Reviewer Comments
+
+Following the reviewers' suggestions, additional numerical experiments and zoomed visualizations were incorporated into the revised manuscript.
+Correspondingly, new MATLAB scripts have been added to this repository, including:
+
+ReiteradaHomogenization_Perfect_Ampliacion_xas1_100_V2_05.m
+
+ReiteradaHomogenization_Perfect_Ampliacion_xas1_100_V2_0785.m
+
+ReiteradaHomogenization_Perfect_Ampliacion_phi99.m
+
+These scripts reproduce the enlarged plots and comparisons related to the Hashin–Shtrikman bounds, Bruno bounds, and the 100-disk analytical model for different contrast ratios and volume fractions.
+
 ## 🔧 Repository Structure
 
 The main folder contains scripts with descriptive names corresponding to the figure or table they generate. Below is a reference map linking each figure/table in the manuscript to the script used.
