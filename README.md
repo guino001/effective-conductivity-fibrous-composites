@@ -70,7 +70,7 @@ Or contact the corresponding author directly:
 
 This repository is archived on Zenodo with the following DOI:
 
-[![DOI](https://zenodo.org/badge/994935213.svg)](https://doi.org/10.5281/zenodo.15579038)
+(https://doi.org/10.5281/zenodo.15579039)
 
 📖 **Citation:**
 
